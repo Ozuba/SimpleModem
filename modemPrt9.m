@@ -6,7 +6,6 @@ fs = 44.1e3; % Sampling freq
 N = 400; % Number of symbols
 
 t = 0:1/fs:T; % Period
-
 %%-------------------------------------- base Ortonormal --------------------------------------%%
 
 %% Definición de los paramtetros del Altavoz/Micro
@@ -56,8 +55,16 @@ text = ' Hello world '
 
 bitstream = str2num(reshape(dec2bin(uint8(text),8).', 1, [])')';
 %Cambiamos los 0 por -1 para modular
-mod = bitstream;
-mod(mod == 0) = -1
+pieces = reshape(bitstream, 2, []); %Separamos en piezas de 2
+mod = zeros(1,size(pieces,2)); %Cojemos la dimension 1 del vector
+%Modulamos
+mod(mod == [0;0]) = -3;
+mod(mod == [0;1]) = -1;
+mod(mod == [1;0]) = 1;
+mod(mod == [1;1]) = 3;
+
+
+
 %signal to be sent
 sig = zeros(1,length(t));
 
@@ -83,22 +90,11 @@ end
 %%Limpiamos morralla y recortamos al tamaño del envio
 %demod(abs(demod) < 1e-12 ) = 0;
 demod = int32(demod(1:length(mod)))
-% Reconstruimos nuestros 0
-demod(demod == -1) = 0;
+% Demodulamos
+
 
 % Volvemos al texto
 
 recText = char(bin2dec(reshape(char(demod + '0'),8,[]).'))'
-
-%{
-¿Que ocurre si cambiamos N (Dimensión de la base)   
-%}
-
-
-
-
-
-
-
 
 
