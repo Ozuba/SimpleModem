@@ -57,12 +57,12 @@ bitstream = str2num(reshape(dec2bin(uint8(text),8).', 1, [])')';
 %Cambiamos los 0 por -1 para modular
 pieces = reshape(bitstream, 2, []); %Separamos en piezas de 2
 mod = zeros(1,size(pieces,2)); %Cojemos la dimension 1 del vector
-%Modulamos
-mod(mod == [0;0]) = -3;
-mod(mod == [0;1]) = -1;
-mod(mod == [1;0]) = 1;
-mod(mod == [1;1]) = 3;
-
+%Modulamos un vector unidimensional de tamaño n/2
+mod(all(pieces == [0;0])) = -3;
+mod(all(pieces == [0;1])) = -1;
+mod(all(pieces == [1;0])) = 1;
+mod(all(pieces == [1;1])) = 3;
+mod
 
 
 %signal to be sent
@@ -73,8 +73,8 @@ for k = 1:length(mod)
 end
 
 %plot(t,sig)
-spectrogram(sig,fs)
-spectrogram(sig, hamming(length(t)), 0.1, 1024, fs, 'yaxis');
+##spectrogram(sig,fs)
+##spectrogram(sig, hamming(length(t)), 0.1, 1024, fs, 'yaxis');
 
 %sound(sig,fs)
 
@@ -89,12 +89,19 @@ end
 
 %%Limpiamos morralla y recortamos al tamaño del envio
 %demod(abs(demod) < 1e-12 ) = 0;
-demod = int32(demod(1:length(mod)))
-% Demodulamos
+demod = int32(demod(1:length(mod)));
+% Demodulamos recuperando el vector con columnas y resapeandolo
+recPieces = zeros(2,size(pieces,2));
+recPieces(:,demod == -3) =  repmat([0; 0], 1, nnz(demod == -3));
+recPieces(:,demod == -1) = repmat([0; 1], 1, nnz(demod == -1));
+recPieces(:,demod == 1) = repmat([1; 0], 1, nnz(demod == 1));
+recPieces(:,demod == 3) = repmat([1; 1], 1, nnz(demod == 3));
+
+recBitstream = recPieces(:); %Return to plain old bitstream
 
 
 % Volvemos al texto
 
-recText = char(bin2dec(reshape(char(demod + '0'),8,[]).'))'
+recText = char(bin2dec(reshape(num2str(recBitstream), 8, []).'))
 
 
