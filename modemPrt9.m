@@ -10,16 +10,17 @@ t = 0:1/fs:T; % Period
 
 %% Definición de los paramtetros del Altavoz/Micro
 
-tRange = [] %Transceiver Dynamic Range
-rRange = [] %Receiver Dynamic Range
+tRange = [0,1e20] %Transceiver Dynamic Range
+rRange = [400,8e3] %Receiver Dynamic Range
 % Elegimos el rango optimo
-fMin = 400;
-fMax = 8e3;
-
+%fMin = 400;
+%fMax = 8e3;
+fMin = max(tRange(1),rRange(1))
+fMax = min(tRange(2),rRange(2))
 
 %{
 Vamos a generar una base ortonormal de N vectores dentro del rango dinamico
-compartido por emisor/receptor, el espaciado vendrá restringido por la frecuencia fudamental
+compartido por emisor/receptor, el espaciado vendrá limitado por la frecuencia fundamental
 que elegiremos en función del ancho de banda
 %}
 %Eleccion de la frecuencia fundamental (Espaciado)
@@ -37,7 +38,7 @@ for i = 1:N
     %Base
     base(i,:) = sin(2*pi*fArm(i)*t);
     %Normalización
-    l2norm = sqrt(trapz(1/fs,abs(base(i,:)).^2));
+    l2norm = sqrt(trapz(1/fs,abs(base(i,:)).^2)); %%Sustituir por valor analítico para optimizar
     base(i,:) = base(i,:)/l2norm; % Normalizamos con su norma l2
 end
 
@@ -54,7 +55,7 @@ end
 text = ' Hello world '
 
 bitstream = str2num(reshape(dec2bin(uint8(text),8).', 1, [])')';
-%Cambiamos los 0 por -1 para modular
+%Empezamos la modulacion
 pieces = reshape(bitstream, 2, []); %Separamos en piezas de 2
 mod = zeros(1,size(pieces,2)); %Cojemos la dimension 1 del vector
 %Modulamos un vector unidimensional de tamaño n/2
